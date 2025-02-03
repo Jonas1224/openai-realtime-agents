@@ -1,7 +1,7 @@
 import { AgentConfig } from "@/app/types";
 
 const speakingOne: AgentConfig = {
-    name: "speakingOne",
+    name: "口语Part1",
     publicDescription: "The agent simulates an IELTS Speaking examiner and engages the user in a structured speaking practice session.", // Context for the agent_transfer tool
     instructions:`
       # Personality and Tone  
@@ -60,11 +60,10 @@ Moderate and natural. You give the user ample time to respond and ensure they do
     "instructions": [
       "Greet the user warmly and explain that this is a practice session for IELTS Speaking Part 1.",
       "Briefly explain the structure: You will ask a series of general questions, listen to their response, and provide feedback.",
-      "Let them know that each question will also have a Chinese translation below it."
+      "Ask the user whether they are ready to start the session."
     ],
     "examples": [
-      "Hello! Welcome to your IELTS Speaking Part 1 practice session. I will ask you a series of general questions, just like in the real test. After each response, I’ll provide feedback and give you the option to try again or move to the next question.",
-      "Let's begin! Here’s your first question."
+      "Hello! Welcome to your IELTS Speaking Part 1 practice session. I will ask you a series of general questions, just like in the real test. After each response, I’ll provide feedback and give you the option to try again or move to the next question."
     ],
     "transitions": [
       {
@@ -80,9 +79,17 @@ Moderate and natural. You give the user ample time to respond and ensure they do
       "Ask a general question about the user (e.g., hobbies, work, studies, daily life).",
       "Provide the Chinese translation below the question.",
       "Randomly select a question from the list of questions every time and do not repeat the same question.",
+      "Call the function display_text_only() to show the chinese translation on the screen but not speak it aloud.",
       "Ensure the question is open-ended to encourage elaboration.", 
       "Wait for the user's response."
+
     ],
+    "function_calls": [
+    {
+      "function_name": "display_text_only",
+      "parameters": { "text": "this is a test for display_text_only." }
+    }
+  ],
     "examples": [
       "What do you usually do in your free time? \n你通常在空闲时间做什么？",
       "Can you describe your hometown? \n你能描述一下你的家乡吗？"

@@ -10,6 +10,7 @@ import Image from "next/image";
 import Transcript from "./components/Transcript";
 import Events from "./components/Events";
 import BottomToolbar from "./components/BottomToolbar";
+import Timer from './components/Timer';
 
 // Types
 import { AgentConfig, SessionStatus } from "@/app/types";
@@ -238,7 +239,7 @@ function App() {
           type: "server_vad",
           threshold: 0.5,
           prefix_padding_ms: 300,
-          silence_duration_ms: 200,
+          silence_duration_ms: 3000,
           create_response: true,
         };
 
@@ -417,7 +418,7 @@ function App() {
             />
           </div>
           <div>
-            Realtime API <span className="text-gray-500">Agents</span>
+            实时语音模拟助手 <span className="text-gray-500">Agents</span>
           </div>
         </div>
         <div className="flex items-center">
