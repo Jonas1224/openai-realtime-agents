@@ -53,6 +53,7 @@ function App() {
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] =
     useState<boolean>(true);
   const [isVideoExpanded, setIsVideoExpanded] = useState<boolean>(false);
+  const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(true);
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
     if (dcRef.current && dcRef.current.readyState === "open") {
@@ -76,6 +77,7 @@ function App() {
     selectedAgentConfigSet,
     sendClientEvent,
     setSelectedAgentName,
+    isTranslationEnabled,
   });
 
   useEffect(() => {
@@ -375,6 +377,10 @@ function App() {
     if (storedAudioPlaybackEnabled) {
       setIsAudioPlaybackEnabled(storedAudioPlaybackEnabled === "true");
     }
+    const storedTranslationEnabled = localStorage.getItem("translationEnabled");
+    if (storedTranslationEnabled) {
+      setIsTranslationEnabled(storedTranslationEnabled === "true");
+    }
   }, []);
 
   useEffect(() => {
@@ -391,6 +397,10 @@ function App() {
       isAudioPlaybackEnabled.toString()
     );
   }, [isAudioPlaybackEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem("translationEnabled", isTranslationEnabled.toString());
+  }, [isTranslationEnabled]);
 
   useEffect(() => {
     if (audioElementRef.current) {
@@ -515,6 +525,8 @@ function App() {
         setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
         isVideoExpanded={isVideoExpanded}
         setIsVideoExpanded={setIsVideoExpanded}
+        isTranslationEnabled={isTranslationEnabled}
+        setIsTranslationEnabled={setIsTranslationEnabled}
       />
     </div>
   );

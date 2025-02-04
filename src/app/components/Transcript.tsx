@@ -93,8 +93,17 @@ function Transcript({
               const containerClasses = `${baseContainer} ${isUser ? "items-end" : "items-start"}`;
               const bubbleBase = `max-w-lg p-3 rounded-xl ${isUser ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-black"}`;
               const isBracketedMessage = title.startsWith("[") && title.endsWith("]");
-              const messageStyle = isBracketedMessage ? "italic text-gray-400" : "";
-              const displayTitle = isBracketedMessage ? title.slice(1, -1) : title;
+              const isTranslation = title.startsWith("[Translation]");
+              const messageStyle = isTranslation 
+                ? "text-gray-600 text-sm" 
+                : isBracketedMessage 
+                  ? "italic text-gray-400" 
+                  : "";
+              const displayTitle = isTranslation 
+                ? title.replace("[Translation] ", "") 
+                : isBracketedMessage 
+                  ? title.slice(1, -1) 
+                  : title;
 
               return (
                 <div key={itemId} className={containerClasses}>

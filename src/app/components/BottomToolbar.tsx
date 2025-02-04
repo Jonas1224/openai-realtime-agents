@@ -16,6 +16,8 @@ interface BottomToolbarProps {
   setIsAudioPlaybackEnabled: (enabled: boolean) => void;
   isVideoExpanded: boolean;
   setIsVideoExpanded: (expanded: boolean) => void;
+  isTranslationEnabled: boolean;
+  setIsTranslationEnabled: (enabled: boolean) => void;
 }
 
 function BottomToolbar({
@@ -32,6 +34,8 @@ function BottomToolbar({
   setIsAudioPlaybackEnabled,
   isVideoExpanded,
   setIsVideoExpanded,
+  isTranslationEnabled,
+  setIsTranslationEnabled,
 }: BottomToolbarProps) {
   const isConnected = sessionStatus === "CONNECTED";
 
@@ -116,6 +120,19 @@ function BottomToolbar({
             />
             <label htmlFor="video-expanded" className="flex items-center cursor-pointer">
               Record
+            </label>
+          </div>
+
+          <div className="flex flex-row items-center gap-2">
+            <input
+              id="translation-enabled"
+              type="checkbox"
+              checked={isTranslationEnabled}
+              onChange={e => setIsTranslationEnabled(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <label htmlFor="translation-enabled" className="flex items-center cursor-pointer">
+              Translation
             </label>
           </div>
         </div>

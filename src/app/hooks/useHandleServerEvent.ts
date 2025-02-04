@@ -4,6 +4,7 @@ import { ServerEvent, SessionStatus, AgentConfig } from "@/app/types";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
 import { useRef } from "react";
+import { fetchTranslation } from '../lib/translation';
 
 export interface UseHandleServerEventParams {
   setSessionStatus: (status: SessionStatus) => void;
@@ -12,6 +13,7 @@ export interface UseHandleServerEventParams {
   sendClientEvent: (eventObj: any, eventNameSuffix?: string) => void;
   setSelectedAgentName: (name: string) => void;
   shouldForceResponse?: boolean;
+  isTranslationEnabled?: boolean;
 }
 
 export function useHandleServerEvent({
@@ -20,6 +22,7 @@ export function useHandleServerEvent({
   selectedAgentConfigSet,
   sendClientEvent,
   setSelectedAgentName,
+  isTranslationEnabled = true,
 }: UseHandleServerEventParams) {
   const {
     transcriptItems,
@@ -102,7 +105,7 @@ export function useHandleServerEvent({
     }
   };
 
-  const handleServerEvent = (serverEvent: ServerEvent) => {
+  const handleServerEvent = async (serverEvent: ServerEvent) => {
     logServerEvent(serverEvent);
 
     switch (serverEvent.type) {
@@ -183,6 +186,26 @@ export function useHandleServerEvent({
         const itemId = serverEvent.item?.id;
         if (itemId) {
           updateTranscriptItemStatus(itemId, "DONE");
+          
+          if (isTranslationEnabled) {
+            const completedMessage = transcriptItems.find(
+              item => item.itemId === itemId && item.type === "MESSAGE" && item.role === "assistant"
+            );
+
+            if (completedMessage?.title) {
+              try {
+                const translation = await fetchTranslation(completedMessage.title);
+                addTranscriptMessage(
+                  `${itemId}-translation`,
+                  "assistant",
+                  `[Translation] ${translation}`,
+                  false
+                );
+              } catch (error) {
+                console.error('Translation failed:', error);
+              }
+            }
+          }
         }
         break;
       }
