@@ -11,6 +11,7 @@ import Transcript from "./components/Transcript";
 import Events from "./components/Events";
 import BottomToolbar from "./components/BottomToolbar";
 import Timer from './components/Timer';
+import Video from "./components/Video";
 
 // Types
 import { AgentConfig, SessionStatus } from "@/app/types";
@@ -51,6 +52,7 @@ function App() {
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] =
     useState<boolean>(true);
+  const [isVideoExpanded, setIsVideoExpanded] = useState<boolean>(false);
 
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
     if (dcRef.current && dcRef.current.readyState === "open") {
@@ -418,7 +420,7 @@ function App() {
             />
           </div>
           <div>
-            实时语音模拟助手 <span className="text-gray-500">Agents</span>
+            Realtime API <span className="text-gray-500">Agents</span>
           </div>
         </div>
         <div className="flex items-center">
@@ -496,6 +498,7 @@ function App() {
         />
 
         <Events isExpanded={isEventsPaneExpanded} />
+        <Video isExpanded={isVideoExpanded} />
       </div>
 
       <BottomToolbar
@@ -510,6 +513,8 @@ function App() {
         setIsEventsPaneExpanded={setIsEventsPaneExpanded}
         isAudioPlaybackEnabled={isAudioPlaybackEnabled}
         setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
+        isVideoExpanded={isVideoExpanded}
+        setIsVideoExpanded={setIsVideoExpanded}
       />
     </div>
   );

@@ -77,9 +77,7 @@ Moderate and natural. You give the user ample time to respond and ensure they do
     "description": "Ask the user a question from IELTS Speaking Part 1.",
     "instructions": [
       "Ask a general question about the user (e.g., hobbies, work, studies, daily life).",
-      "Provide the Chinese translation below the question.",
-      "Randomly select a question from the list of questions every time and do not repeat the same question.",
-      "Call the function display_text_only() to show the chinese translation on the screen but not speak it aloud.",
+      "Randomly present a IELTS Speaking Part 1 question every time and do not repeat the same question.",
       "Ensure the question is open-ended to encourage elaboration.", 
       "Wait for the user's response."
 
@@ -90,10 +88,6 @@ Moderate and natural. You give the user ample time to respond and ensure they do
       "parameters": { "text": "this is a test for display_text_only." }
     }
   ],
-    "examples": [
-      "What do you usually do in your free time? \n你通常在空闲时间做什么？",
-      "Can you describe your hometown? \n你能描述一下你的家乡吗？"
-    ],
     "transitions": [
       {
         "next_step": "3_receive_answer",
@@ -109,11 +103,6 @@ Moderate and natural. You give the user ample time to respond and ensure they do
       "Provide constructive feedback, pointing out strengths and areas for improvement.",
       "Include a Chinese translation of the feedback below the English version.",
 "If the response is off-topic, unclear, or too short, prompt the user to elaborate."
-    ],
-    "examples": [
-      "Your answer was clear, and you used a variety of vocabulary, which is great! However, try to avoid small hesitations like ‘um’ and ‘uh’. You could also expand your answer by giving more details. \n你的回答很清晰，而且你使用了多样的词汇，这很棒！但是，尽量避免像‘嗯’和‘呃’这样的停顿词。你还可以通过提供更多细节来扩展你的答案。",
-	  "Great answer! You provided a clear description of your hometown, mentioning its size and key attractions. However, you could improve by using more varied sentence structures. For example, instead of 'It is a beautiful city,' you could say 'The city boasts stunning landscapes and a vibrant atmosphere.' Keep practicing! \n回答得很好！你清楚地描述了你的家乡，提到了它的规模和主要景点。但是，你可以通过使用更多样的句型来提升表达。例如，与其说‘It is a beautiful city’，你可以说‘The city boasts stunning landscapes and a vibrant atmosphere’。继续练习吧！"
-      "Your pronunciation was generally good, but you might want to work on the ‘th’ sound, as it was slightly unclear in some words. Keep practicing, and you’ll improve! \n你的发音总体上很好，但你可能需要练习‘th’音，因为在某些单词中它不太清晰。继续练习，你会进步的！"
     ],
     "transitions": [
       { 

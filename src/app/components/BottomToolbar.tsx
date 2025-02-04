@@ -14,6 +14,8 @@ interface BottomToolbarProps {
   setIsEventsPaneExpanded: (expanded: boolean) => void;
   isAudioPlaybackEnabled: boolean;
   setIsAudioPlaybackEnabled: (enabled: boolean) => void;
+  isVideoExpanded: boolean;
+  setIsVideoExpanded: (expanded: boolean) => void;
 }
 
 function BottomToolbar({
@@ -28,6 +30,8 @@ function BottomToolbar({
   setIsEventsPaneExpanded,
   isAudioPlaybackEnabled,
   setIsAudioPlaybackEnabled,
+  isVideoExpanded,
+  setIsVideoExpanded,
 }: BottomToolbarProps) {
   const isConnected = sessionStatus === "CONNECTED";
 
@@ -99,6 +103,19 @@ function BottomToolbar({
             />
             <label htmlFor="logs-expanded" className="flex items-center cursor-pointer">
               Show logs
+            </label>
+          </div>
+
+          <div className="flex flex-row items-center gap-2">
+            <input
+              id="video-expanded"
+              type="checkbox"
+              checked={isVideoExpanded}
+              onChange={e => setIsVideoExpanded(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <label htmlFor="video-expanded" className="flex items-center cursor-pointer">
+              Record
             </label>
           </div>
         </div>
