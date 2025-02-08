@@ -79,7 +79,7 @@ function BottomToolbar({
                 (!isPTTActive ? " bg-gray-100 text-gray-400" : "")
               }
             >
-              Talk
+              说话
             </button>
           </div>
 
@@ -93,9 +93,10 @@ function BottomToolbar({
               className="w-4 h-4"
             />
             <label htmlFor="audio-playback" className="flex items-center cursor-pointer">
-              Audio playback
+              语音播放
             </label>
           </div>
+
 
           <div className="flex flex-row items-center gap-2">
             <input
@@ -119,7 +120,7 @@ function BottomToolbar({
               className="w-4 h-4"
             />
             <label htmlFor="video-expanded" className="flex items-center cursor-pointer">
-              Record
+              录像
             </label>
           </div>
 
@@ -132,7 +133,7 @@ function BottomToolbar({
               className="w-4 h-4"
             />
             <label htmlFor="translation-enabled" className="flex items-center cursor-pointer">
-              Translation
+              翻译
             </label>
           </div>
         </div>

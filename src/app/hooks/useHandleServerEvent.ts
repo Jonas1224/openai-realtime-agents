@@ -112,14 +112,21 @@ export function useHandleServerEvent({
       case "session.created": {
         if (serverEvent.session?.id) {
           setSessionStatus("CONNECTED");
+          
           addTranscriptBreadcrumb(
-            `session.id: ${
-              serverEvent.session.id
-            }\nStarted at: ${new Date().toLocaleString()}`
+            `新对话开始 
+            \n 起始时间：${new Date().toLocaleString()}`
+            // `session.id: ${
+            //   serverEvent.session.id
+            // }\nStarted at: ${new Date().toLocaleString()}`
+
           );
+
+          
         }
         break;
       }
+
 
       case "conversation.item.created": {
         let text =
