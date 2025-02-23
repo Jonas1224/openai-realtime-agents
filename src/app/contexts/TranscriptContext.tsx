@@ -4,19 +4,24 @@ import React, { createContext, useContext, useState, FC, PropsWithChildren } fro
 import { v4 as uuidv4 } from "uuid";
 import { TranscriptItem } from "@/app/types";
 
-type TranscriptContextValue = {
+interface TranscriptContextValue {
   transcriptItems: TranscriptItem[];
+  currentQuestionId: string | null;
   addTranscriptMessage: (itemId: string, role: "user" | "assistant", text: string, hidden?: boolean) => void;
   updateTranscriptMessage: (itemId: string, text: string, isDelta: boolean) => void;
   addTranscriptBreadcrumb: (title: string, data?: Record<string, any>) => void;
   toggleTranscriptItemExpand: (itemId: string) => void;
   updateTranscriptItemStatus: (itemId: string, newStatus: "IN_PROGRESS" | "DONE") => void;
-};
+  isHistoryVisible: boolean;
+  setIsHistoryVisible: (visible: boolean) => void;
+}
 
 const TranscriptContext = createContext<TranscriptContextValue | undefined>(undefined);
 
 export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
   const [transcriptItems, setTranscriptItems] = useState<TranscriptItem[]>([]);
+  const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
 
   function newTimestampPretty(): string {
     return new Date().toLocaleTimeString([], {
@@ -30,7 +35,6 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
   const addTranscriptMessage: TranscriptContextValue["addTranscriptMessage"] = (itemId, role, text = "", isHidden = false) => {
     setTranscriptItems((prev) => {
       if (prev.some((log) => log.itemId === itemId && log.type === "MESSAGE")) {
-        console.warn(`[addTranscriptMessage] skipping; message already exists for itemId=${itemId}, role=${role}, text=${text}`);
         return prev;
       }
 
@@ -45,6 +49,11 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
         status: "IN_PROGRESS",
         isHidden,
       };
+
+      // If this is an assistant message, set it as current question
+      if (role === "assistant" && !text.startsWith("[Translation]")) {
+        setCurrentQuestionId(itemId);
+      }
 
       return [...prev, newItem];
     });
@@ -101,11 +110,14 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
     <TranscriptContext.Provider
       value={{
         transcriptItems,
+        currentQuestionId,
         addTranscriptMessage,
         updateTranscriptMessage,
         addTranscriptBreadcrumb,
         toggleTranscriptItemExpand,
         updateTranscriptItemStatus,
+        isHistoryVisible,
+        setIsHistoryVisible,
       }}
     >
       {children}

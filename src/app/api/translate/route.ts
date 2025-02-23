@@ -10,11 +10,11 @@ export async function POST(request: Request) {
     const { text } = await request.json();
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini-2024-07-18",
       messages: [
         {
           role: "system",
-          content: "You are a translator. Translate the following English text to Chinese. Only respond with the translation, no explanations."
+          content: "You are a translator. Translate the following English text to Chinese. The text is from a academic test. So try your best to align with the context. Only respond with the translation, no explanations."
         },
         {
           role: "user",

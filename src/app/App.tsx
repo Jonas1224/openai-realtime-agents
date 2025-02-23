@@ -14,6 +14,7 @@ import Timer from './components/Timer';
 import Video from "./components/Video";
 import Auth from './components/Auth';
 import UserProfile from './components/UserProfile';
+import CurrentConversation from './components/CurrentConversation';
 
 // Types
 import { AgentConfig, SessionStatus } from "@/app/types";
@@ -512,16 +513,19 @@ function AppContent() {
         </div>
       </div>
 
-      <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={handleSendTextMessage}
-          canSend={
-            sessionStatus === "CONNECTED" &&
-            dcRef.current?.readyState === "open"
-          }
-        />
+      <div className="flex flex-1 gap-4 px-8 overflow-hidden relative">
+        <div className="flex flex-col flex-1 min-h-0 justify-between">
+          <CurrentConversation />
+          <Transcript
+            userText={userText}
+            setUserText={setUserText}
+            onSendMessage={handleSendTextMessage}
+            canSend={
+              sessionStatus === "CONNECTED" &&
+              dcRef.current?.readyState === "open"
+            }
+          />
+        </div>
 
         <Events isExpanded={isEventsPaneExpanded} />
         <Video isExpanded={isVideoExpanded} />
