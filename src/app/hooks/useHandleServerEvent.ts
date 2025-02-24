@@ -3,7 +3,7 @@
 import { ServerEvent, SessionStatus, AgentConfig } from "@/app/types";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { fetchTranslation } from '../lib/translation';
 
 export interface UseHandleServerEventParams {
@@ -14,6 +14,15 @@ export interface UseHandleServerEventParams {
   setSelectedAgentName: (name: string) => void;
   shouldForceResponse?: boolean;
   isTranslationEnabled?: boolean;
+  setIsPrepTimerActive: (active: boolean) => void;
+  isPrepTimerActive: boolean;
+}
+
+/// 口语Part2&3 的追踪器
+interface ConversationState {
+  currentState: string;
+  description: string;
+  timestamp: number;
 }
 
 export function useHandleServerEvent({
@@ -23,6 +32,8 @@ export function useHandleServerEvent({
   sendClientEvent,
   setSelectedAgentName,
   isTranslationEnabled = true,
+  setIsPrepTimerActive,
+  isPrepTimerActive,
 }: UseHandleServerEventParams) {
   const {
     transcriptItems,
@@ -33,6 +44,8 @@ export function useHandleServerEvent({
   } = useTranscript();
 
   const { logServerEvent } = useEvent();
+  /// 口语Part2&3 的追踪器
+  const [currentConversationState, setCurrentConversationState] = useState<ConversationState | null>(null);
 
   const handleFunctionCall = async (functionCallParams: {
     name: string;
@@ -40,6 +53,16 @@ export function useHandleServerEvent({
     arguments: string;
   }) => {
     const args = JSON.parse(functionCallParams.arguments);
+    /* 口语Part2&3 的追踪器
+    if (functionCallParams.name === "trackConversationState") {
+      const { currentState, stateDescription } = args;
+      setCurrentConversationState({ currentState, description: stateDescription, timestamp: Date.now() });
+      addTranscriptBreadcrumb(
+        `State Transition: ${args.currentState}`,
+        { description: args.stateDescription }
+      );
+    }*/
+    
     const currentAgent = selectedAgentConfigSet?.find(
       (a) => a.name === selectedAgentName
     );
@@ -106,7 +129,7 @@ export function useHandleServerEvent({
   };
 
   const handleServerEvent = async (serverEvent: ServerEvent) => {
-    logServerEvent(serverEvent);
+    logServerEvent({...serverEvent, currentConversationState});
 
     switch (serverEvent.type) {
       case "session.created": {
@@ -194,6 +217,16 @@ export function useHandleServerEvent({
         if (itemId) {
           updateTranscriptItemStatus(itemId, "DONE");
           
+          /* 口语Part2&3 的追踪器
+          if (currentConversationState) {
+            addTranscriptBreadcrumb(
+              `Completed State: ${currentConversationState.currentState}`,
+              {
+                description: currentConversationState.description,
+                timestamp: new Date(currentConversationState.timestamp).toLocaleString()
+              }
+            );
+          }*/
           if (isTranslationEnabled) {
             const completedMessage = transcriptItems.find(
               item => item.itemId === itemId && item.type === "MESSAGE" && item.role === "assistant"
@@ -212,6 +245,50 @@ export function useHandleServerEvent({
                 console.error('Translation failed:', error);
               }
             }
+          }
+        }
+        break;
+      }
+
+      case "output_audio_buffer.stopped": {
+        // Add debug logs
+        console.log("Audio buffer stopped event triggered");
+        console.log("Current agent:", selectedAgentName);
+        console.log("Agent config set:", selectedAgentConfigSet);
+
+        // Check if we're in Speaking2&3 mode
+        const isSpeaking2and3 = selectedAgentName === "口语Part2&3";
+        console.log("Is Speaking2&3:", isSpeaking2and3);
+
+        if (isSpeaking2and3 && !isPrepTimerActive) {
+          // Find the latest assistant message using transcriptItems
+          const latestAssistantMessage = [...transcriptItems]
+            .reverse()
+            .find(item => item.role === "assistant" && item.type === "MESSAGE");
+          
+          console.log("Latest assistant message:", latestAssistantMessage?.title);
+
+          if (latestAssistantMessage?.title?.endsWith("Your preparation time starts now.")) {
+            console.log("Starting prep timer");
+            setIsPrepTimerActive(true);
+            
+            // Wait for 60 seconds
+            setTimeout(() => {
+              // Send the sequence of events
+              sendClientEvent(
+                { type: "input_audio_buffer.clear" },
+                "prep_timer_complete"
+              );
+              sendClientEvent(
+                { type: "input_audio_buffer.commit" },
+                "prep_timer_complete"
+              );
+              sendClientEvent(
+                { type: "response.create" },
+                "prep_timer_complete"
+              );
+              setIsPrepTimerActive(false);
+            }, 60000);
           }
         }
         break;

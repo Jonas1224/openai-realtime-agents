@@ -15,6 +15,7 @@ import Video from "./components/Video";
 import Auth from './components/Auth';
 import UserProfile from './components/UserProfile';
 import CurrentConversation from './components/CurrentConversation';
+import PrepTimer from './components/PrepTimer';
 
 // Types
 import { AgentConfig, SessionStatus } from "@/app/types";
@@ -58,6 +59,7 @@ function AppContent() {
     useState<boolean>(true);
   const [isVideoExpanded, setIsVideoExpanded] = useState<boolean>(false);
   const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(true);
+  const [isPrepTimerActive, setIsPrepTimerActive] = useState(false);
 
   const { user } = useAuth();
 
@@ -84,6 +86,8 @@ function AppContent() {
     sendClientEvent,
     setSelectedAgentName,
     isTranslationEnabled,
+    setIsPrepTimerActive,
+    isPrepTimerActive,
   });
 
   useEffect(() => {
@@ -548,6 +552,7 @@ function AppContent() {
         isTranslationEnabled={isTranslationEnabled}
         setIsTranslationEnabled={setIsTranslationEnabled}
       />
+      <PrepTimer isActive={isPrepTimerActive} />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import { AgentConfig } from "@/app/types";
 
+
+
 const speaking2and3: AgentConfig = {
     name: "口语Part2&3",
     publicDescription: "The agent simulates an IELTS Speaking examiner and engages the user in a structured speaking test part 2 and 3 session.", // Context for the agent_transfer tool
@@ -63,7 +65,8 @@ Moderate. You speak at a natural, clear pace, allowing candidates to understand 
       "Greet the candidate.",
       "Explain that this is a practice session for IELTS Speaking Parts 2 and 3.",
       "No need to explain the struture of these two parts.",
-      "Keep the introduction short."
+      "Keep the introduction short.",
+      "Ask the candidate if they are ready to proceed."
 
     ],
     "transitions": [{ "next_step": "2_present_cue_card", "condition": "Once the introduction is complete." }]
@@ -73,7 +76,7 @@ Moderate. You speak at a natural, clear pace, allowing candidates to understand 
     "description": "present the cue card topic.",
     "instructions": [
       "Randomly select a Part 2 cue card topic and present it to the candidate.",
-      "Note the user that they have 60 seconds to prepare for their response and there is a timer on the right bottom of the screen.",
+      "Always end with 'Your preparation time starts now.' after the cue card topic is presented.".
       
     ],
     "transitions": [{ "next_step": "3_candidate_speaks", "condition": "Automatic transition." }]
@@ -82,9 +85,8 @@ Moderate. You speak at a natural, clear pace, allowing candidates to understand 
     "id": "3_candidate_speaks",
     "description": "Listen to the candidate's Part 2 response.",
     "instructions": [
-      "Note the user that they can start speaking.",
+      "Note the user that they shall start speaking now.",
       "Note the user that they can speak for up to 2 minutes.",
-      "If the candidate pauses too long, gently encourage them to continue.",
       "Do not interrupt their response."
     ],
     "transitions": [{ "next_step": "4_evaluate_part2", "condition": "Once the candidate finishes." }]
@@ -155,7 +157,7 @@ Moderate. You speak at a natural, clear pace, allowing candidates to understand 
 ]
 `,
 tools: [
-  {
+  /*{
       type: "function",
       name: "wait",
       description:
@@ -171,9 +173,51 @@ tools: [
         required: ["duration"],
         additionalProperties: false,
       },
-    }
+    }*/
+      /*{
+        
+        type: "function",
+        name: "trackConversationState",
+        description: "Tracks the current state of the IELTS speaking test conversation",
+        parameters: {
+          type: "object",
+          properties: {
+            currentState: {
+              type: "string",
+              description: "The current conversation state ID",
+              enum: [
+                "1_intro",
+                "2_present_cue_card",
+                "3_candidate_speaks",
+                "4_evaluate_part2",
+                "5_provide_sample_answer",
+                "6_transition_to_part3",
+                "7_part3_questions",
+                "8_evaluate_part3",
+                "9_conclusion"
+              ]
+            },
+            stateDescription: {
+              type: "string",
+              description: "Description of the current state"
+            }
+          },
+          required: ["currentState", "stateDescription"],
+          additionalProperties: false
+        }
+      }*/
 ],
-toolLogic: {
+
+/*toolLogic: {
+  trackConversationState: async ({ currentState, stateDescription }) => {
+    return {
+      status: "success",
+      state: currentState,
+      description: stateDescription
+    };
+  }
+}
+  /*
   wait: async ({ duration }) => {
     console.log(`[toolLogic] waiting for ${duration} seconds`);
     await new Promise(resolve => setTimeout(resolve, duration * 1000));
@@ -183,6 +227,7 @@ toolLogic: {
     };
   },
 },
+*/
 }
 
 export default speaking2and3;
