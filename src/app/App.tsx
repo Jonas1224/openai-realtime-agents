@@ -16,6 +16,7 @@ import Auth from './components/Auth';
 import UserProfile from './components/UserProfile';
 import CurrentConversation from './components/CurrentConversation';
 import PrepTimer from './components/PrepTimer';
+import SpeakingTimer from './components/SpeakingTimer';
 
 // Types
 import { AgentConfig, SessionStatus } from "@/app/types";
@@ -60,6 +61,7 @@ function AppContent() {
   const [isVideoExpanded, setIsVideoExpanded] = useState<boolean>(false);
   const [isTranslationEnabled, setIsTranslationEnabled] = useState<boolean>(true);
   const [isPrepTimerActive, setIsPrepTimerActive] = useState(false);
+  const [isSpeakingTimerActive, setIsSpeakingTimerActive] = useState(false);
 
   const { user } = useAuth();
 
@@ -79,6 +81,52 @@ function AppContent() {
     }
   };
 
+  const handleTalkButtonDown = () => {
+    if (sessionStatus !== "CONNECTED" || dataChannel?.readyState !== "open")
+      return;
+    cancelAssistantSpeech();
+
+    setIsPTTUserSpeaking(true);
+    console.log("handleTalkButtonDown, isPTTUserSpeaking=", isPTTUserSpeaking);
+    sendClientEvent({ type: "input_audio_buffer.clear" }, "clear PTT buffer");
+  };
+
+  const handleTalkButtonUp = () => {
+    if (
+      sessionStatus !== "CONNECTED" ||
+      dataChannel?.readyState !== "open" 
+    ) {
+      console.log("not working handleTalkBUttonUp, isPTTUserSpeaking=", isPTTUserSpeaking);
+      return;
+    }
+
+    setIsPTTUserSpeaking(false);
+    console.log("handleTalkButtonUp");
+    sendClientEvent({ type: "input_audio_buffer.commit" }, "commit PTT");
+    sendClientEvent({ type: "response.create" }, "trigger response PTT");
+  };
+  const sendSimulatedUserMessage = (text: string) => {
+    const id = uuidv4().slice(0, 32);
+    addTranscriptMessage(id, "user", text, true);
+
+    sendClientEvent(
+      {
+        type: "conversation.item.create",
+        item: {
+          id,
+          type: "message",
+          role: "user",
+          content: [{ type: "input_text", text }],
+        },
+      },
+      "(simulated user text message)"
+    );
+    sendClientEvent(
+      { type: "response.create" },
+      "(trigger response after simulated user text message)"
+    );
+  };
+
   const handleServerEventRef = useHandleServerEvent({
     setSessionStatus,
     selectedAgentName,
@@ -88,6 +136,13 @@ function AppContent() {
     isTranslationEnabled,
     setIsPrepTimerActive,
     isPrepTimerActive,
+    setIsPTTActive,
+    handleTalkButtonDown,
+    handleTalkButtonUp,
+    sendSimulatedUserMessage,
+    setIsSpeakingTimerActive,
+    isSpeakingTimerActive,
+
   });
 
   useEffect(() => {
@@ -218,27 +273,7 @@ function AppContent() {
     logClientEvent({}, "disconnected");
   };
 
-  const sendSimulatedUserMessage = (text: string) => {
-    const id = uuidv4().slice(0, 32);
-    addTranscriptMessage(id, "user", text, true);
 
-    sendClientEvent(
-      {
-        type: "conversation.item.create",
-        item: {
-          id,
-          type: "message",
-          role: "user",
-          content: [{ type: "input_text", text }],
-        },
-      },
-      "(simulated user text message)"
-    );
-    sendClientEvent(
-      { type: "response.create" },
-      "(trigger response after simulated user text message)"
-    );
-  };
 
   const updateSession = (shouldTriggerResponse: boolean = false) => {
     sendClientEvent(
@@ -328,28 +363,6 @@ function AppContent() {
     setUserText("");
 
     sendClientEvent({ type: "response.create" }, "trigger response");
-  };
-
-  const handleTalkButtonDown = () => {
-    if (sessionStatus !== "CONNECTED" || dataChannel?.readyState !== "open")
-      return;
-    cancelAssistantSpeech();
-
-    setIsPTTUserSpeaking(true);
-    sendClientEvent({ type: "input_audio_buffer.clear" }, "clear PTT buffer");
-  };
-
-  const handleTalkButtonUp = () => {
-    if (
-      sessionStatus !== "CONNECTED" ||
-      dataChannel?.readyState !== "open" ||
-      !isPTTUserSpeaking
-    )
-      return;
-
-    setIsPTTUserSpeaking(false);
-    sendClientEvent({ type: "input_audio_buffer.commit" }, "commit PTT");
-    sendClientEvent({ type: "response.create" }, "trigger response PTT");
   };
 
   const onToggleConnection = () => {
@@ -553,6 +566,7 @@ function AppContent() {
         setIsTranslationEnabled={setIsTranslationEnabled}
       />
       <PrepTimer isActive={isPrepTimerActive} />
+      <SpeakingTimer isActive={isSpeakingTimerActive} />
     </div>
   );
 }

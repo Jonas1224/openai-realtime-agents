@@ -3,8 +3,9 @@
 import { ServerEvent, SessionStatus, AgentConfig } from "@/app/types";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { fetchTranslation } from '../lib/translation';
+
 
 export interface UseHandleServerEventParams {
   setSessionStatus: (status: SessionStatus) => void;
@@ -16,6 +17,12 @@ export interface UseHandleServerEventParams {
   isTranslationEnabled?: boolean;
   setIsPrepTimerActive: (active: boolean) => void;
   isPrepTimerActive: boolean;
+  setIsPTTActive: (active: boolean) => void;
+  handleTalkButtonDown: () => void;
+  handleTalkButtonUp: () => void;
+  sendSimulatedUserMessage: (message: string) => void;
+  setIsSpeakingTimerActive: (active: boolean) => void;
+  isSpeakingTimerActive: boolean;
 }
 
 /// 口语Part2&3 的追踪器
@@ -34,6 +41,12 @@ export function useHandleServerEvent({
   isTranslationEnabled = true,
   setIsPrepTimerActive,
   isPrepTimerActive,
+  setIsPTTActive,
+  handleTalkButtonDown,
+  handleTalkButtonUp,
+  sendSimulatedUserMessage,
+  setIsSpeakingTimerActive,
+  isSpeakingTimerActive,
 }: UseHandleServerEventParams) {
   const {
     transcriptItems,
@@ -46,6 +59,20 @@ export function useHandleServerEvent({
   const { logServerEvent } = useEvent();
   /// 口语Part2&3 的追踪器
   const [currentConversationState, setCurrentConversationState] = useState<ConversationState | null>(null);
+
+  const prepTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const speakingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearTimers = () => {
+    if (prepTimerRef.current) {
+      clearTimeout(prepTimerRef.current);
+      prepTimerRef.current = null;
+    }
+    if (speakingTimerRef.current) {
+      clearTimeout(speakingTimerRef.current);
+      speakingTimerRef.current = null;
+    }
+  };
 
   const handleFunctionCall = async (functionCallParams: {
     name: string;
@@ -251,44 +278,37 @@ export function useHandleServerEvent({
       }
 
       case "output_audio_buffer.stopped": {
-        // Add debug logs
-        console.log("Audio buffer stopped event triggered");
-        console.log("Current agent:", selectedAgentName);
-        console.log("Agent config set:", selectedAgentConfigSet);
-
-        // Check if we're in Speaking2&3 mode
         const isSpeaking2and3 = selectedAgentName === "口语Part2&3";
         console.log("Is Speaking2&3:", isSpeaking2and3);
 
-        if (isSpeaking2and3 && !isPrepTimerActive) {
-          // Find the latest assistant message using transcriptItems
+        if (isSpeaking2and3) {
+          clearTimers();
+
           const latestAssistantMessage = [...transcriptItems]
             .reverse()
-            .find(item => item.role === "assistant" && item.type === "MESSAGE");
+            .find(item => item.role === "assistant" && item.type === "MESSAGE" && !item.title?.startsWith("[Translation]"));
           
-          console.log("Latest assistant message:", latestAssistantMessage?.title);
-
           if (latestAssistantMessage?.title?.endsWith("Your preparation time starts now.")) {
-            console.log("Starting prep timer");
             setIsPrepTimerActive(true);
+            setIsPTTActive(true);
             
-            // Wait for 60 seconds
-            setTimeout(() => {
-              // Send the sequence of events
-              sendClientEvent(
-                { type: "input_audio_buffer.clear" },
-                "prep_timer_complete"
-              );
-              sendClientEvent(
-                { type: "input_audio_buffer.commit" },
-                "prep_timer_complete"
-              );
-              sendClientEvent(
-                { type: "response.create" },
-                "prep_timer_complete"
-              );
+            prepTimerRef.current = setTimeout(() => {
+              sendSimulatedUserMessage("I am ready, let's start.");
               setIsPrepTimerActive(false);
+              setIsPTTActive(false);
             }, 60000);
+
+          } else if (latestAssistantMessage?.title?.endsWith("Your two minutes start now.") || latestAssistantMessage?.title?.endsWith("Your two minutes starts now.")) {
+            console.log("Starting speaking timer");
+            setIsPTTActive(true);
+            setIsSpeakingTimerActive(true);
+            handleTalkButtonDown();
+            
+            speakingTimerRef.current = setTimeout(() => {
+              handleTalkButtonUp();
+              setIsPTTActive(false);
+              setIsSpeakingTimerActive(false);
+            }, 120000);
           }
         }
         break;
@@ -301,6 +321,11 @@ export function useHandleServerEvent({
 
   const handleServerEventRef = useRef(handleServerEvent);
   handleServerEventRef.current = handleServerEvent;
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => clearTimers();
+  }, []);
 
   return handleServerEventRef;
 }
